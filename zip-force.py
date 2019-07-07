@@ -87,7 +87,7 @@ def parse_arguments():
     parser.add_argument('-d', action='store_true',
                         help='include digits in password alphabet')
     parser.add_argument('-s', action='store_true',
-                        help='include special characters in password alphabet')
+                        help='include special characters in password alphabet (can be VERY slow)')
     parser.add_argument('-l', '--length', type=int, default=8,
                         help='maximum length of the brute forced password (default is 8 characters)')
     parser.add_argument('-v', '--verbose', action='store_true',
@@ -111,11 +111,10 @@ if __name__ == '__main__':
     if args.d:
         alphabet += '0123456789'
 
-    # TODO: select special characters
     if args.s:
-        alphabet += ''
+        alphabet += ' !"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~'
 
-    # Only
+    # Only start if alphabet isn't empty
     if alphabet is '':
         print('You need to specify at least one group to be included in the alphabet!')
     else:
