@@ -7,13 +7,14 @@ from zipfile import ZipFile, BadZipFile
 
 # TODO: save progress in file, specify output path
 class ZipForcer:
-    def __init__(self, input_zip, files, password_alphabet, password_dictionary, password_length, verbose):
+    def __init__(self, input_zip, files, password_alphabet, password_dictionary, password_length, output_path, verbose):
         self.__input_zip = input_zip
         self.__files = files
         self.__password_alphabet = password_alphabet
         self.__password_dictionary = password_dictionary
         self.__password_length = password_length
         self.__verbose = verbose
+        self.__output_path = output_path
         self.__tries = 0
         self.__tries_since_last_second = self.__tries
         self.__start_time = None
@@ -99,7 +100,7 @@ class ZipForcer:
         if self.__verbose:
             self.__print_progress(password)
 
-        self.__my_zip.extractall(members=self.__files, pwd=password.encode('utf-8'))
+        self.__my_zip.extractall(members=self.__files, pwd=password.encode('utf-8'), path=self.__output_path)
 
         # Only executed when extractall doesn't throw
         end_time = time.time()
@@ -140,6 +141,8 @@ def parse_arguments():
                         help='include special characters in password alphabet (can be VERY slow)')
     parser.add_argument('-l', metavar='length', type=int, default=8,
                         help='maximum length of the brute forced password (default is 8 characters)')
+    parser.add_argument('-o', metavar='output', type=str,
+                        help='path where to save extracted files')
     parser.add_argument('-v', '--verbose', action='store_true',
                         help='increase output verbosity')
 
@@ -170,13 +173,13 @@ if __name__ == '__main__':
         if not args.D:
             print('You need to specify at least one group to be included in the password alphabet or a dictionary!')
         else:
-            zip_forcer = ZipForcer(args.input, args.files, None, args.D, args.l, args.verbose)
+            zip_forcer = ZipForcer(args.input, args.files, None, args.D, args.l, args.o, args.verbose)
     else:
         if not args.D:
-            zip_forcer = ZipForcer(args.input, args.files, alphabet, None, args.l, args.verbose)
+            zip_forcer = ZipForcer(args.input, args.files, alphabet, None, args.l, args.o, args.verbose)
         else:
             print('WARNING: when you set a dictionary parameters affecting the alphabet are ignored.')
-            zip_forcer = ZipForcer(args.input, args.files, None, args.D, args.l, args.verbose)
+            zip_forcer = ZipForcer(args.input, args.files, None, args.D, args.l, args.o, args.verbose)
 
     if zip_forcer:
         zip_forcer.brute_force_zip()
