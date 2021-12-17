@@ -1,11 +1,12 @@
 import argparse
+import datetime
 import itertools
 import os
+import re
 import time
 from zipfile import ZipFile, BadZipFile
 
 
-# TODO: save progress in file, specify output path
 class ZipForcer:
     def __init__(self, input_zip, files, password_alphabet, password_dictionary, password_length, output_path, verbose):
         self.__input_zip = input_zip
@@ -81,6 +82,7 @@ class ZipForcer:
             print('Could not find zip file. Please specify a valid path.')
         except KeyboardInterrupt:
             print('\rProgram was exited by keyboard interrupt.')
+            self.__save_progress()
 
     def __print_progress(self, password):
         if time.time() - self.__last_second_time >= 1:
@@ -117,9 +119,17 @@ class ZipForcer:
 
         self.__my_zip.close()
 
-    # TODO: implement
     def __save_progress(self):
-        pass
+        tokens = re.split('/', self.__input_zip)
+        sanitized_name = tokens[-1]
+        output_filename = sanitized_name + '_' + str(datetime.datetime.now().date())
+        with open(output_filename, 'x', encoding='utf-8') as output_file:
+            output_file.write(self.__input_zip)
+            output_file.write(self.__files)
+
+    def __restore_progress(self, path_to_progress_file):
+        with open(path_to_progress_file, 'r') as progress_file:
+            pass
 
 
 def parse_arguments():
@@ -169,7 +179,7 @@ if __name__ == '__main__':
         alphabet += ' !"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~'
 
     # Decide if to use the dictionary or generate the passwords
-    if alphabet is '':
+    if alphabet == '':
         if not args.D:
             print('You need to specify at least one group to be included in the password alphabet or a dictionary!')
         else:
